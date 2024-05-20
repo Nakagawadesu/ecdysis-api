@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-type UserType = {
+export type UserType = {
   _id?: ObjectId;
   accountData: AccountData;
   skinQualityReports: Array<ObjectId>;
@@ -8,7 +8,7 @@ type UserType = {
   SkinHealthReportsCount?: number;
   Metrics?: UserMetricsType;
 };
-type AccountData = {
+export type AccountData = {
   username: string;
   email: string;
   phone?: string;
@@ -17,7 +17,7 @@ type AccountData = {
   updatedAt?: Date;
   birthdate?: Date;
 };
-type UserMetricsType = {
+export type UserMetricsType = {
   Age?: number;
   mediumPimplesScore: number;
   mediumwrikelsScore: number;
