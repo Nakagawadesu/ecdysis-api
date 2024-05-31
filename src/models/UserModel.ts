@@ -50,7 +50,14 @@ class UserModel {
     log.group(`Create User Controller`);
     try {
       const response = await this.collection.insertOne(user);
-    } catch {}
+      log.groupEnd();
+      return response;
+    } catch {
+      log.error(`Error creating user`);
+
+      log.groupEnd();
+      return null;
+    }
   };
 }
 
