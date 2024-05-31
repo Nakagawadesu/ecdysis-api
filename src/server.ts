@@ -1,9 +1,9 @@
-import express, { response } from "express";
 import cors from "cors";
 // import helmet from 'helmet';
 import userRouter from "./routes/userRoutes";
-
+import ResponseHandler from "./middleWares/ResponseHandler";
 import Logger from "./helpers/Logger";
+import express from "express";
 import dotenv from "dotenv";
 
 // Import routes
@@ -30,5 +30,5 @@ app.use(
 app.use(express.json());
 
 app.use("/api/users", userRouter);
-//app.use(ResponseHandler.handle);
+app.use(ResponseHandler.handle);
 export default app;
