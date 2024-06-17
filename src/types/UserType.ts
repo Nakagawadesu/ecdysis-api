@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 export type UserType = {
   _id?: ObjectId;
   accountData: AccountData;
-  SkinHealthReports: Array<ObjectId>;
+  SkinHealthReports?: Array<ObjectId>;
   SkinHealthReportsCount?: number;
 };
 export type AccountData = {
