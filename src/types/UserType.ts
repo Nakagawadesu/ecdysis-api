@@ -6,6 +6,7 @@ export type UserType = {
   SkinHealthReportsCount?: number;
 };
 export type AccountData = {
+  emailVerified: boolean;
   username: string;
   email: string;
   phone?: string;
@@ -13,8 +14,4 @@ export type AccountData = {
   createdAt?: Date;
   updatedAt?: Date;
   birthdate?: Date;
-};
-export type UserMetricsType = {
-  Age?: number;
-  HealthIssues: Array<string>;
 };
