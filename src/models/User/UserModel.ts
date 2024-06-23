@@ -62,7 +62,7 @@ class UserModel {
   };
 
   public createUser = async (user: UserType) => {
-    log.group(`Create User Controller`);
+    log.group(`Create User at UserModel Level`);
     try {
       const response = await this.collection.insertOne(user);
       log.groupEnd();
@@ -74,8 +74,8 @@ class UserModel {
       return error;
     }
   };
-  public readUser = async (userId: string) => {
-    log.group(`Get User Controller`);
+  public readUserById = async (userId: string) => {
+    log.group(`Get User by Id at UserModel Level`);
     try {
       const user = await this.collection.findOne({ _id: new ObjectId(userId) });
       log.groupEnd();
@@ -87,8 +87,25 @@ class UserModel {
       return null;
     }
   };
+  public readUserByEmail = async (email: string) => {
+    log.group(`Get User by Email at UserModel Level`);
+    log.info(`Email: ${email}`);
+    try {
+      const user = await this.collection.findOne({
+        "accountData.email": email,
+      });
+      log.info(`User: ${JSON.stringify(user)}`);
+      log.groupEnd();
+      return user;
+    } catch {
+      log.error(`Error getting user by email ${email}`);
+
+      log.groupEnd();
+      return null;
+    }
+  };
   public updateUser = async (userId: string, user: UserType) => {
-    log.group(`Update User Controller`);
+    log.group(`Update User  at UserModel Level`);
     try {
       const response = await this.collection.updateOne(
         { _id: new ObjectId(userId) },
@@ -103,8 +120,8 @@ class UserModel {
       return error;
     }
   };
-  public deleteUser = async (userId: string) => {
-    log.group(`Delete User Controller`);
+  public deleteUserById = async (userId: string) => {
+    log.group(`Delete User by  Id at UserModel Level`);
     try {
       const response = await this.collection.deleteOne({
         _id: new ObjectId(userId),
@@ -118,9 +135,24 @@ class UserModel {
       return error;
     }
   };
+  public deleteUserByEmail = async (email: string) => {
+    log.group(`Delete User by Email at UserModel Level`);
+    try {
+      const response = await this.collection.deleteOne({
+        "accountData.email": email,
+      });
+      log.groupEnd();
+      return response;
+    } catch (error) {
+      log.error(`Error creating user`);
+
+      log.groupEnd();
+      return error;
+    }
+  };
 
   public verifyEmail = async (userId: string) => {
-    log.group(`Verify Email Controller`);
+    log.group(`Verify Email at UserModel Level`);
     try {
       const response = await this.collection.updateOne(
         { _id: new ObjectId(userId) },
@@ -129,7 +161,22 @@ class UserModel {
       log.groupEnd();
       return response;
     } catch (error) {
-      log.error(`Error creating user`);
+      log.error(`Error cVeryfing email ${error}`);
+
+      log.groupEnd();
+      return error;
+    }
+  };
+  public isEmailVerified = async (email: string) => {
+    log.group(`Is Email Verified at UserModel Level`);
+    try {
+      const user = await this.collection.findOne({
+        "accountData.email": email,
+      });
+      log.groupEnd();
+      return user?.accountData.emailVerified;
+    } catch (error) {
+      log.error(`Error identifying if email is veryfied ${error}`);
 
       log.groupEnd();
       return error;
