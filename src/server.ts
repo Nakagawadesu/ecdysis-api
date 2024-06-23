@@ -5,6 +5,7 @@ import ResponseHandler from "./middleWares/ResponseHandler";
 import Logger from "./helpers/Logger";
 import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
 
 // Import routes
 const log = new Logger();
