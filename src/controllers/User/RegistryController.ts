@@ -15,6 +15,8 @@ import verificationEmail from "../../templates/VerificationEmail";
 import { VerificationSuccessTemplate } from "../../templates/VerificationSuccessTemplate";
 import dotenv from "dotenv";
 import { MongoServerError } from "mongodb";
+import { TokenExpiredTemplate } from "../../templates/TokenExpiredTemplate";
+import SaltEncrypter from "../../helpers/SaltEncrypter";
 dotenv.config();
 
 const log = new Logger();
@@ -66,17 +68,25 @@ class RegistryController {
       };
       return requestAssembler.assembleRequest(req, next, payload);
     }
+    const passwordHash = await SaltEncrypter.hashPassword(password);
     const user: UserType = {
       accountData: {
         username: username,
         email: email,
-        password: password,
+        password: passwordHash,
         emailVerified: false,
       },
     };
     try {
       const res = await this.userModelInstace.createUser(user);
-
+      if (res instanceof MongoServerError && res.code === 11000) {
+        const payload = {
+          status: HttpStatusCode.CONFLICT,
+          message: "Email já cadastrado",
+          log: `Email already registered ${res}`,
+        };
+        return requestAssembler.assembleRequest(req, next, payload);
+      }
       if (!res) {
         const payload = {
           status: HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -94,9 +104,9 @@ class RegistryController {
 
       log.warning(`Token hash: ${encriptedtoken}`);
 
-      const data = moment(tokenCreatedAt).format("DD/MM/YYYY");
+      const data = moment.utc(tokenCreatedAt).format("DD/MM/YYYY");
 
-      const horario = moment(tokenCreatedAt).format("HH:mm:ss");
+      const horario = moment.utc(tokenCreatedAt).format("HH:mm:ss");
       const template = handlebars.compile(verificationEmail);
       const send = await sendEmail({
         to: email,
@@ -104,7 +114,7 @@ class RegistryController {
         body: template({
           clientUrl:
             `${process.env.CLIENT_URL}/auth/confirm/email` ||
-            "http://localhost:3000/auth/confirm/email",
+            "http://localhost:3000/api/users/auth/confirm/email",
           token: encriptedtoken,
           data: data,
           horario: horario,
@@ -148,17 +158,17 @@ class RegistryController {
 
     log.warning(`Token hash: ${encriptedtoken}`);
 
-    const data = moment(tokenCreatedAt).format("DD/MM/YYYY");
+    const data = moment.utc(tokenCreatedAt).format("DD/MM/YYYY");
 
-    const horario = moment(tokenCreatedAt).format("HH:mm:ss");
+    const horario = moment.utc(tokenCreatedAt).format("HH:mm:ss");
     const template = handlebars.compile(verificationEmail);
     const send = await sendEmail({
       to: email,
       subject: "Seu código de verificação",
       body: template({
         clientUrl:
-          `${process.env.CLIENT_URL}/auth/confirm/email` ||
-          "http://localhost:3000/auth/confirm/email",
+          `${process.env.CLIENT_URL}/api/users/auth/confirm/email` ||
+          "http://localhost:3000/api/users/auth/confirm/email",
         token: encriptedtoken,
         data: data,
         horario: horario,
@@ -170,21 +180,28 @@ class RegistryController {
     res: Response,
     next: NextFunction
   ) => {
-    const token = req.params.token;
+    const token = req.query.token as string;
 
     const decryptedToken = this.secretEncrypter.decryptData(token);
     const email = decryptedToken.split(" ")[0];
     const tokenCreatedAt = decryptedToken.split(" ")[1];
 
-    if (moment(tokenCreatedAt).isBefore(moment().subtract(1, "days"))) {
-      requestAssembler.assembleRequest(req, next, {
-        status: HttpStatusCode.BAD_REQUEST,
-        message: "Token expirado",
-        log: `Token expired`,
-      });
-    }
+    if (moment.utc(tokenCreatedAt).isBefore(moment.utc().subtract(1, "days"))) {
+      const response = this.userModelInstace.deleteUserByEmail(email);
+      if (!response) {
+        return requestAssembler.assembleRequest(req, next, {
+          status: HttpStatusCode.INTERNAL_SERVER_ERROR,
+          message: "Erro interno do servidor",
+          log: `Error deleting user`,
+        });
+      }
+      const template = handlebars.compile(TokenExpiredTemplate);
+      const html = template({});
 
-    const user = await this.userModelInstace.readUser(email);
+      res.status(200).send(html);
+    }
+    log.info(`Email: ${email}`);
+    const user = await this.userModelInstace.readUserByEmail(email);
     if (!user) {
       return requestAssembler.assembleRequest(req, next, {
         status: HttpStatusCode.NOT_FOUND,
@@ -195,7 +212,7 @@ class RegistryController {
     const userId = user._id;
 
     const response = await this.userModelInstace.verifyEmail(
-      JSON.stringify(userId)
+      JSON.stringify(userId).slice(1, -1)
     );
     if (!response) {
       return requestAssembler.assembleRequest(req, next, {
@@ -205,13 +222,9 @@ class RegistryController {
       });
     }
     const template = handlebars.compile(VerificationSuccessTemplate);
+    const html = template({});
 
-    return requestAssembler.assembleRequest(req, next, {
-      status: HttpStatusCode.OK,
-      message: "Email verificado com sucesso",
-      body: template,
-      log: `Email verified`,
-    });
+    res.status(200).send(html);
   };
 }
 export default RegistryController;
