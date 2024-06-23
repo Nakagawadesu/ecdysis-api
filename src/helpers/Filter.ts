@@ -1,5 +1,6 @@
 import HttpStatusCode from "../utils/HttpStatusCode";
-
+import Logger from "./Logger";
+const log = new Logger();
 class Filter {
   static getMissingFields(fieldList: string[], Obj: Object) {
     const missingFields: string[] = [];
@@ -14,6 +15,7 @@ class Filter {
   }
   static validateFields = (fields: string[], data: Record<string, any>) => {
     // Check if data is provided
+    log.info(`validatingFields`);
     if (!data) {
       return {
         status: HttpStatusCode.BAD_REQUEST,
@@ -36,7 +38,7 @@ class Filter {
             : "existe um campo faltando :"
         } 
               ${missingFields.join(", ")}`,
-        log: `Missing fields : ${missingFields}`,
+        log: `Missing fields : ${missingFieldsStr}`,
       };
     }
   };
