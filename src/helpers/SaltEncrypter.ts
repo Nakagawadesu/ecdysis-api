@@ -1,9 +1,7 @@
 import bcrypt from "bcrypt";
 class SaltEncrypter {
-  static saltRounds: 12;
-
   static hashPassword = async (password: string) => {
-    const hashed = bcrypt.hash(password, this.saltRounds);
+    const hashed = bcrypt.hash(password, 12);
     return hashed;
   };
   static comparePasswords = async (password: string, passwordDB: string) => {
