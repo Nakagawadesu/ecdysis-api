@@ -27,7 +27,7 @@ class SecretEncrypter {
   public encryptData(data: string) {
     try {
       const cipher = crypto.createCipheriv(
-        ENCRYPTION_METHOD as string,
+        process.env.ENCRYPTION_METHOD as string,
         this.key,
         this.encryptionIV
       );
@@ -42,9 +42,20 @@ class SecretEncrypter {
   public decryptData(encryptedData: string) {
     log.group("decryptData function");
     try {
+      log.success(process.env.ENCRYPTION_METHOD, "ENCRYPTION_METHOD");
+
+      if (!encryptedData) {
+        throw new Error("encryptedData is undefined");
+      }
+      log.success(encryptedData, "encryptedData");
+
       const buff = Buffer.from(encryptedData, "base64");
+
+      if (!buff) {
+        throw new Error("Buffer creation failed");
+      }
       const decipher = crypto.createDecipheriv(
-        ENCRYPTION_METHOD as string,
+        process.env.ENCRYPTION_METHOD as string,
         this.key,
         this.encryptionIV
       );
@@ -56,6 +67,7 @@ class SecretEncrypter {
         decipher.final("utf8")
       );
     } catch (error) {
+      log.error("Error decrypting data", error);
       throw new Error("Invalid data format");
     }
   }
