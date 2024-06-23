@@ -1,9 +1,9 @@
 import { MongoClient, ServerApiVersion } from "mongodb";
 import mongodb from "mongodb";
-import dotenv from "dotenv";
 import Logger from "../helpers/Logger";
-
+import dotenv from "dotenv";
 dotenv.config();
+
 const log = new Logger();
 
 class Database {
