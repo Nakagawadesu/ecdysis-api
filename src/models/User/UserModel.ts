@@ -7,8 +7,11 @@ import {
   Document,
 } from "mongodb";
 import Database from "../../config/Database";
-import { UserType, AccountData, UserMetricsType } from "../../types/UserType";
+import { UserType, AccountData } from "../../types/UserType";
+import dotenv from "dotenv";
 import { resolve } from "path";
+dotenv.config();
+
 const log = new Logger();
 
 class UserModel {
@@ -26,23 +29,35 @@ class UserModel {
     this.collection = this.client
       .db(this.databaseName)
       .collection(this.collectionName);
+    this.connectToCollection();
   }
-
+  private createIndexes = async () => {
+    try {
+      await this.collection.createIndex(
+        { "accountData.email": 1 },
+        { unique: true }
+      );
+    } catch (error) {
+      log.error(`Error creating indexes: ${error}`);
+      throw error;
+    }
+  };
   private connectToCollection = async () => {
     try {
       this.client = await this.client.connect();
-      log.info(`Connected to database ${this.databaseName}`);
     } catch (error) {
-      log.error(`error connecting to database ${this.databaseName}`);
       throw error;
     }
     try {
       this.collection = this.client
         .db(this.databaseName)
         .collection(this.collectionName);
+
+      this.createIndexes();
       log.info(`Connected to collection ${this.collectionName}`);
-    } catch {
+    } catch (error) {
       log.error(`error connecting to collection ${this.collectionName}`);
+      throw error;
     }
   };
 
@@ -52,11 +67,11 @@ class UserModel {
       const response = await this.collection.insertOne(user);
       log.groupEnd();
       return response;
-    } catch {
+    } catch (error) {
       log.error(`Error creating user`);
 
       log.groupEnd();
-      return null;
+      return error;
     }
   };
   public readUser = async (userId: string) => {
@@ -81,11 +96,11 @@ class UserModel {
       );
       log.groupEnd();
       return response;
-    } catch {
-      log.error(`Error updating user`);
+    } catch (error) {
+      log.error(`Error creating user`);
 
       log.groupEnd();
-      return null;
+      return error;
     }
   };
   public deleteUser = async (userId: string) => {
@@ -96,11 +111,28 @@ class UserModel {
       });
       log.groupEnd();
       return response;
-    } catch {
-      log.error(`Error deleting user`);
+    } catch (error) {
+      log.error(`Error creating user`);
 
       log.groupEnd();
-      return null;
+      return error;
+    }
+  };
+
+  public verifyEmail = async (userId: string) => {
+    log.group(`Verify Email Controller`);
+    try {
+      const response = await this.collection.updateOne(
+        { _id: new ObjectId(userId) },
+        { $set: { "accountData.emailVerified": true } }
+      );
+      log.groupEnd();
+      return response;
+    } catch (error) {
+      log.error(`Error creating user`);
+
+      log.groupEnd();
+      return error;
     }
   };
 }
