@@ -29,16 +29,7 @@ class LoginController {
     try {
       const email = req.body.email;
       const password = req.body.password;
-      const emailVerified = await this.userModelInstace.isEmailVerified(email);
-      if (!emailVerified) {
-        const payload = {
-          status: HttpStatusCode.UNAUTHORIZED,
-          message:
-            "Email não verificado, de uma olhada em sua caixa de entrada",
-          log: `Email not verified : ${email}`,
-        };
-        return requestAssembler.assembleRequest(req, next, payload);
-      }
+
       const missingFieldsPaylaod = Filter.validateFields(
         ["email", "password"],
         req.body
@@ -52,11 +43,9 @@ class LoginController {
       }
       //check Regex on inputs
       if (!RegexHandler.isEmailValid(email)) {
-        req.statusMessage = "Email inválido";
-
         const payload = {
           status: HttpStatusCode.BAD_REQUEST,
-          message: "Email inválido",
+          message: "Formato do Email inválido",
           log: `Invalid email : ${email}`,
         };
         return requestAssembler.assembleRequest(req, next, payload);
@@ -64,15 +53,13 @@ class LoginController {
       if (!RegexHandler.isPasswordValid(password)) {
         const payload = {
           status: HttpStatusCode.BAD_REQUEST,
-          message: "Email inválido",
+          message: "Formato da Senha inválido",
           log: `Invalid password : ${password}`,
         };
         return requestAssembler.assembleRequest(req, next, payload);
       }
 
       const user = await this.userModelInstace.readUserByEmail(email);
-      const userJSON = JSON.parse(JSON.stringify(user));
-      const passwordDB = userJSON.accountData.password;
       if (!user) {
         const payload = {
           status: HttpStatusCode.NOT_FOUND,
@@ -81,6 +68,20 @@ class LoginController {
         };
         return requestAssembler.assembleRequest(req, next, payload);
       }
+
+      const emailVerified = await this.userModelInstace.isEmailVerified(email);
+      if (!emailVerified) {
+        const payload = {
+          status: HttpStatusCode.UNAUTHORIZED,
+          message:
+            "Email não verificado, de uma olhada em sua caixa de entrada",
+          log: `Email not verified : ${email}`,
+        };
+        return requestAssembler.assembleRequest(req, next, payload);
+      }
+
+      const userJSON = JSON.parse(JSON.stringify(user));
+      const passwordDB = userJSON.accountData.password;
       log.info(`password tested ${password}, password  DB: ${passwordDB}`);
       const passwordMatch = await SaltEncrypter.comparePasswords(
         password,
