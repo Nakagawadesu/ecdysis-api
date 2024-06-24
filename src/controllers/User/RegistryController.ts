@@ -181,7 +181,13 @@ class RegistryController {
     next: NextFunction
   ) => {
     const token = req.query.token as string;
-
+    if (!token) {
+      return requestAssembler.assembleRequest(req, next, {
+        status: HttpStatusCode.BAD_REQUEST,
+        message: "Token não encontrado",
+        log: `Token not found`,
+      });
+    }
     const decryptedToken = this.secretEncrypter.decryptData(token);
     const email = decryptedToken.split(" ")[0];
     const tokenCreatedAt = decryptedToken.split(" ")[1];
