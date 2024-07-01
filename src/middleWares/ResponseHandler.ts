@@ -9,7 +9,14 @@ class ResponseHandler {
     if (!req.statusMessage) {
       req.statusMessage = "An error occurred";
     }
-    return res.status(req.statusCode).send(req.statusMessage);
+    const response = {
+      message: req.statusMessage,
+      payload: req.body,
+    };
+    console.log(
+      `Response: ${JSON.stringify(response)} , statusCode: ${req.statusCode}`
+    );
+    return res.status(req.statusCode).send(response);
   }
 }
 
