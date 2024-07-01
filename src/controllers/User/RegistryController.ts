@@ -106,20 +106,29 @@ class RegistryController {
 
       const data = moment.utc(tokenCreatedAt).format("DD/MM/YYYY");
 
-      const horario = moment.utc(tokenCreatedAt).format("HH:mm:ss");
+      const horario = moment(tokenCreatedAt).format("HH:mm:ss");
       const template = handlebars.compile(verificationEmail);
       const send = await sendEmail({
         to: email,
         subject: "Seu código de verificação",
         body: template({
           clientUrl:
-            `${process.env.CLIENT_URL}/auth/confirm/email` ||
+            `${process.env.CLIENT_URL}/api/users/auth/confirm/email` ||
             "http://localhost:3000/api/users/auth/confirm/email",
           token: encriptedtoken,
           data: data,
           horario: horario,
         }),
       });
+      if (!send) {
+        const payload = {
+          status: HttpStatusCode.INTERNAL_SERVER_ERROR,
+          message:
+            "Erro interno do servidor , por favor tente novamente mais tarde",
+          log: `Error sending email ${send}`,
+        };
+        return requestAssembler.assembleRequest(req, next, payload);
+      }
       const payload = {
         status: HttpStatusCode.OK,
         message:
@@ -128,11 +137,6 @@ class RegistryController {
       };
       return requestAssembler.assembleRequest(req, next, payload);
     } catch (error) {
-      req.statusCode = 500;
-
-      log.error(`Error creating user ${error}`);
-      req.statusMessage =
-        "Erro interno do servidor , por favor tente novamente mais tarde";
       log.groupEnd();
       const payload = {
         status: HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -162,6 +166,7 @@ class RegistryController {
 
     const horario = moment.utc(tokenCreatedAt).format("HH:mm:ss");
     const template = handlebars.compile(verificationEmail);
+
     const send = await sendEmail({
       to: email,
       subject: "Seu código de verificação",
@@ -174,6 +179,12 @@ class RegistryController {
         horario: horario,
       }),
     });
+    const payload = {
+      status: HttpStatusCode.OK,
+      message: "Email de verificação enviado",
+      log: `Email sent ${send}`,
+    };
+    requestAssembler.assembleRequest(req, next, payload);
   };
   public confirmEmail = async (
     req: Request,
