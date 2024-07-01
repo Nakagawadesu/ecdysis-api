@@ -113,7 +113,7 @@ const ConfirmEmail = `
               </tr>
               <tr>
                 <td style="padding-top: 8px; padding-bottom: 16px">
-                  Notamos que você se registrou na plataforma Ecdysis no dia {{date}} às {{time}}. Você está quase pronto para começar a explorar os recursos transformadores do Ecdysis.
+                  Notamos que você se registrou na plataforma Ecdysis no dia {{data}} às {{horario}}. Você está quase pronto para começar a explorar os recursos transformadores do Ecdysis.
                 </td>
               </tr>
               <tr>
