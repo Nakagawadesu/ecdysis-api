@@ -8,6 +8,7 @@ class requestAssembler {
     next: NextFunction,
     payload: AssemblerPayload
   ) {
+    log.group("RequestAssembler");
     if (payload.status == 500) {
       payload.log ? log.error(payload.log) : null;
       req.statusCode = payload.status;
@@ -27,7 +28,7 @@ class requestAssembler {
       req.statusCode = payload.status;
       req.statusMessage = payload.message;
       req.body = payload.body;
-
+      log.success(`Request assembled: ${JSON.stringify(req.body)}`);
       log.groupEnd();
       return next();
     }
