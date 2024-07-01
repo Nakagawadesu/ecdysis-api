@@ -106,22 +106,7 @@ const ConfirmationSuccessEmail = `
                   <p style="padding-bottom: 16px">
                     Para começar, faça login na sua conta e inicie sua jornada com a Ecdysis. Se você tiver alguma dúvida ou precisar de assistência, não hesite em entrar em contato com nossa equipe de suporte.
                   </p>
-                  <p style="text-align: center;">
-                    <a
-                      href="{{clientUrl}}"
-                      style="
-                        display: inline-block;
-                        padding: 12px 24px;
-                        margin-top: 16px;
-                        color: white;
-                        background-color: #3f51b5;
-                        text-decoration: none;
-                        border-radius: 8px;
-                        font-weight: 600;
-                      "
-                      >Ir para Ecdysis</a
-                    >
-                  </p>
+                  
                 </td>
               </tr>
             </table>
