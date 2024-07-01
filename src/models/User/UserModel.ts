@@ -68,7 +68,7 @@ class UserModel {
       log.groupEnd();
       return response;
     } catch (error) {
-      log.error(`Error creating user`);
+      log.error(`Error creating user ${error}`);
 
       log.groupEnd();
       return error;
