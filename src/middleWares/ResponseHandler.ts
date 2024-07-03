@@ -14,7 +14,9 @@ class ResponseHandler {
       payload: req.body,
     };
     console.log(
-      `Response: ${JSON.stringify(response)} , statusCode: ${req.statusCode}`
+      `Response: ${JSON.stringify(response.message)} , statusCode: ${
+        req.statusCode
+      }`
     );
     return res.status(req.statusCode).send(response);
   }
